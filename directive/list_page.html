@@ -1,0 +1,18 @@
+<div class="article__header">
+	<h1 class="article__title">{{d.article_title}}</h1>
+</div>
+<div class="article__body">
+	<div class="other-libs">
+		<div class="card" ng-repeat="list in d.article_list">
+			<library-card ng-if="list.plugins_rec == '1'" data="list"></library-card>
+			<jser-card ng-if="list.plugins_rec == '0'" data="list"></jser-card>
+		</div>
+	</div>
+	<div class="pager">
+		<a class="prev-page" ng-if="d.isPrevPage" ng-click="c.prevPage()" ng-href="javascript:void(0)">PREV</a>
+		<a class="next-page" ng-if="d.isNextPage" ng-click="c.nextPage()" ng-href="javascript:void(0)">NEXT</a>
+	</div>
+</div>
+
+
+

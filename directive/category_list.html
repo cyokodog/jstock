@@ -1,0 +1,9 @@
+<div class="wp-widget" ng-repeat="c1 in ctrl.data.category">
+	<div class="wp-widget__header">{{c1.section_name}}</div>
+	<ul class="{{c1.section_id}}-category-list">
+		<li ng-repeat="c2 in c1.category_list">
+			<a ui-sref="category({pageId:c1.section_id,categoryId:c2.category_id})">{{c2.category_name}}</a>
+			<span class="qty">{{c2.qty}}</span>
+		</li>
+	</ul>
+</div>

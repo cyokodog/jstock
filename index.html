@@ -1,306 +1,65 @@
 <!DOCTYPE html>
-<html>
-	<head>
-	<meta charset="utf-8" />
-	<meta http-equiv="X-UA-Compatible" content="chrome=1" />
-	<title id="site-title">JSTOCK</title>
-	<link rel="shortcut icon" href="http://www.cyokodog.net/wp-content/themes/cyokodog-0.5/favicon.ico">
+<html ng-app="app">
+  <head>
+    <meta charset="utf-8">
 
-	<meta name="description" content="JacaScript ライブラリとそれらを作ったり紹介してる人たちのデータベースです。" />
-	<meta name="keywords" content="JavaScript,jQuery,jQuery Plugin" />
-	<meta property="og:title" content="JSTOCK">
-	<meta property="og:type" content="website">
-	<meta property="og:url" content="http://www.cyokodog.net/jstock/">
-	<meta property="og:image" content="https://secure.gravatar.com/avatar/f424be4d459838505e225aff28cfb636?s=140&d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png">
-	<meta property="og:site_name" content="JSTOCK">
-	<meta property="fb:app_id" content="jstock">
+  <link rel="stylesheet" type="text/css" media="screen" href="jstock/css/style.css">
+  <link href='http://fonts.googleapis.com/css?family=Raleway:300' rel='stylesheet' type='text/css'>
+  <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
 
-	<link rel="stylesheet" type="text/css" media="screen" href="jstock/css/style.css">
-	<link href='http://fonts.googleapis.com/css?family=Raleway:300' rel='stylesheet' type='text/css'>
-	<link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
-	<script type='text/javascript' src='http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js?ver=1.0'></script>
-	<script type="text/javascript" src="jstock/js/jquery.tmpl.min.js"></script>
-	<script src="jstock/js/jquery.ba-hashchange.min.js" type="text/javascript"></script>
-	<script src="jstock/js/activity-indicator.js" type="text/javascript"></script>
-<!--[if lte IE 8]>
-	<script src="jstock/js/html5.js" type="text/javascript"></script>
-<![endif]-->
-	<script src="jstock/js/jstock.js" type="text/javascript"></script>
 
-	<script type="text/javascript">
-		jQuery(function($){
-			$.jstock();
-		});
-	</script>
 
-	<script class="tmpl" id="tmpl-cateogry-section" type="text/x-jquery-tmpl">
-		<div class="wp-widget">
-			<div class="wp-widget__header">${section_name}</div>
-			<ul class="${section_id}-category-list">
-				{{each category_list}}
-					<li><a href="#/${section_id}/${$value.category_id}/" data-category-id="${$value.category_id}">${$value.category_name}</a> <span class="qty">${$value.qty}</span></li>
-				{{/each}}
-			</ul>
-		</div>
-	</script>
+  <script type="text/javascript" src="bower_components/angular/angular.js"></script>
+  <script type="text/javascript" src="bower_components/angular-ui-router/release/angular-ui-router.js"></script>
+  <script src="js/index.js"></script>
 
-	<script class="tmpl" id="tmpl-pager" type="text/x-jquery-tmpl">
-		{{each article_list_info}}
-			{{if $value.prev_page_no}}<a class="prev-page" data-page="${$value.prev_page_no}">PREV</a>{{/if}}
-			{{if $value.next_page_no}}<a class="next-page" data-page="${$value.next_page_no}">NEXT</a>{{/if}}
-		{{/each}}
-	</script>
 
-	<script class="tmpl" id="tmpl-card" type="text/x-jquery-tmpl">
-		{{if article_list == ''}}
-			<p>Nothing</p>
-		{{else}}
-			{{each article_list}}
-				{{if $value.plugins_rec=="1"}}
-					<div class="card">
-						<h3 class="card__tilte">
-							<a href="#/library/${$value.plugins_id}/"><img class="card__jser-icon" src="${$value.plugger_img_url}"/> ${plugins_name}</a>
-						</h3>
-						<a href="#/library/${$value.plugins_id}/"><img class="card__lib-img" src="${$value.plugins_img_url_s}"/></a>
-						<p class="card__desc">${$value.plugins_desc}</p>
-						<ul class="card-info">
-							<li class="card-info__date">${post_date}</li>
-							<li class="card-info__entries">${entries_qty} POST</li>
-							<li class="card-info__author">
-							<a href="#/library/${$value.plugins_id}/">${plugger_name}</a>
-							</li>
-							<li class="card-info__link"><a class="ext" target="_blank" href="${$value.plugins_page_url}">SITE</a>
-								{{if $value.demo_page_url}} , <a class="ext" target="_blank" href="${$value.demo_page_url}">DEMO</a>{{/if}}
-							</li>
-						</ul>
-					</div>
-				{{else}}
-					<div class="card">
-						<h3 class="card__tilte">
-							<a href="#/jser/${$value.plugger_id}/">${$value.plugger_name}</a>
-						</h3>
-						<a href="#/jser/${$value.plugger_id}/"><img class="card__jser-img" src="${$value.plugger_img_url}"/></a>
-						<p class="card__desc">${$value.plugins_desc}</p>
-						<ul class="card-info">
-							<li class="card-info__date">${$value.post_date}</li>
-							<li class="card-info__libs">${plugins_qty}</li>
-							<li class="card-info__entries">${entries_qty}</li>
-							<li class="card-info__sns">
-								{{if plugger_github_id}}<a class="fa fa-github-square" target="_blank" href="https://github.com/${plugger_github_id}"></a>{{/if}}
-								{{if plugger_twitter_id}}<a class="fa fa-twitter-square" target="_blank" href="https://twitter.com/${plugger_twitter_id}"></a>{{/if}}
-								{{if plugger_fb_id}}<a class="fa fa-facebook-square" target="_blank" href="http://www.facebook.com/${plugger_fb_id}"></a>{{/if}}
-								{{if plugger_hatena_id}}<a class="fa fa-hatena" target="_blank" href="http://www.hatena.ne.jp/${plugger_hatena_id}"></a>{{/if}}
-							&nbsp;</li>
-							<li class="card-info__site"><a class="ext" target="_blank" href="${$value.plugger_site_url}">${plugger_site_name}</a></li>
-						</ul>
-					</div>
-				{{/if}}
-			{{/each}}
-		{{/if}}
-	</script>
+  </head>
 
-	<script class="tmpl" id="tmpl-jser-article" type="text/x-jquery-tmpl">
-		<div class="article__header">
-			<h1 class="article__title">${plugger_name}</h1>
-			<ul class="article__info">
-				<li class="article__info__date">${post_date}</li>
-				<li class="article__info__category">
-					{{if plugins_qty > 0}}
-						{{if jp_flg == '1'}}
-							<a href="#/jser/japanese-creator">Japanese Creator</a>
-						{{else}}
-							<a href="#/jser/creator">Creator</a>
-						{{/if}}
-					{{else}}
-						{{if jp_flg == '1'}}
-							<a href="#/jser/japanese-reviewer/">Japanese Reviewer</a>
-						{{/if}}
-					{{/if}}
-				</li>
-				<li class="article__info__libs ${getQtyClass(plugins_qty)}">${plugins_qty}</li>
-				<li class="article__info__entries ${getQtyClass(entries_qty)}">${entries_qty}</li>
-			</ul>
-		</div>
-		<div class="article__body">
-			<div class="jser">
-				<div class="jser__photo">
-					<img src="${plugger_img_url}"/>
-				</div>
-				<div class="jser__links">
-					<ul class="article-index">
-						<li><a target="_blank" href="${plugger_site_url}">${plugger_site_name}</a></li>
-						<li>
-							{{if plugger_github_id}}<a class="fa fa-github-square" target="_blank" href="https://github.com/${plugger_github_id}"> GitHub</a>{{/if}}
-							{{if plugger_twitter_id}}<a class="fa fa-twitter-square" target="_blank" href="https://twitter.com/${plugger_twitter_id}"> Twitter</a>{{/if}}
-							{{if plugger_fb_id}}<a class="fa fa-facebook-square" target="_blank" href="http://www.facebook.com/${plugger_fb_id}"> Facebook</a>{{/if}}
-							{{if plugger_hatena_id}}<a class="fa fa-hatena" target="_blank" href="http://www.hatena.ne.jp/${plugger_hatena_id}"> Hatena</a>{{/if}}
-						</li>
-					</ul>
-				</div>
-				<div class="jser__desc">
-					<p>${plugger_desc}</p>
-				</div>
-			</div>
+  <body>
+    <!-- HEADER -->
+    <div class="l-header">
+      <div class="u-layout-center">
+        <div class="site-header">
+          <a class="site-header__logo" target="_blank" href="http://www.cyokodog.net/">
+            <img src="https://lh4.googleusercontent.com/-u47wdUJYuNk/Tuiz2w6sLuI/AAAAAAAAEGA/v0cmgN4ZysU/s144/DSC01588.JPG"/>
+          </a>
+          <div class="site-header__text">
+            <h1>
+              <a ui-sref="home()"><span class="site-header__logo-strong">JS</span>TOCK</a>
+            </h1>
+            <h2>LIBRARY &amp; JSer STOCK</h2>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="l-site-nav">
+      <div class="u-layout-center">
+        <div class="tab site-nav">
+          <ul>
+            <li class="site-nav__home"><a ui-sref="home()">HOME</a></li><!--
+            --><li class="site-nav__library"><a ui-sref="page({pageId:'library'})">LIBRARY</a></li><!--
+            --><li class="site-nav__jser"><a ui-sref="page({pageId:'jser'})">JSer</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="l-contents">
+      <div class="u-layout-center">
+        <div class="l-article">
+          <article class="article">
+          <div ui-view="viewArticle"></div>
+          </article>
+        </div>
+        <div class="l-page-nav">
+          <div class="l-page-nav__body">
+            <category-list></category-list>
+          </div>
+        </div>
+      </div>
+    </div>
 
-			<h2>His Entries</h2>
-			<div class="his-entries">
-				{{if follow_list == ''}}
-					<p>Nothing</p>
-				{{else}}
-					<dl>
-						{{each follow_list}}
-							<dt>
-								<a class="lib-icon" href="#/library/${$value.plugins_id}/">
-									<img class="lib-icon__img" src="${$value.plugins_img_url_s}"/>
-								</a>
-							</dt>
-							<dd>
-								<a href="#/library/${$value.plugins_id}/">${$value.plugins_name}</a>
-								<ul>
-									{{each follow_entry}}
-										<li><a class="ext" target="_blank" href="${$value.entry_url}">${$value.entry_title}</a></li>
-									{{/each}}
-								</ul>
-							</dd>
-						{{/each}}
-					</dl>
-				{{/if}}
-			</div>
 
-			<h2>His Library</h2>
-			<div class="his-libs">
-				{{tmpl "#tmpl-card"}}
-			</div>
-			<div class="pager">
-				{{tmpl "#tmpl-pager"}}
-			</div>
-		</div>
-	</script>
+  </body>
 
-	<script class="tmpl" id="tmpl-library-article" type="text/x-jquery-tmpl">
-		<div class="article__header">
-			<h1 class="article__title">${plugins_name}</h1>
-			<ul class="article__info">
-				<li class="article__info__date">${post_date}</li>
-				<li class="article__info__category"><a href="#/library/${category_id}/">${category_name}</a></li>
-				<li class="article__info__licence">${licence}</li>
-				<li class="article__info__entries ${getQtyClass(entries_qty)}">${entries_qty}</li>
-			</ul>
-		</div>
-		<div class="article__body">
-			<div class="lib">
-				<div class="lib__photo">
-					<img src="${plugins_img_url_l}"/>
-				</div>
-				<div class="lib__jser">
-					<a class="jser-icon" href="#/jser/${plugger_id}/">
-						<img class="jser-icon__img" src="${plugger_img_url}"/>
-						<span class="jser-icon__name">@${plugger_name}</span>
-					</a>
-				</div>
-				<div class="lib__links">
-					<ul class="article-index">
-						<li><a target="_blank" href="${plugins_page_url}">WebSite</a></li>
-						{{if demo_page_url}}<li><a target="_blank" href="${demo_page_url}">DEMO</a></li>{{/if}}
-					</ul>
-				</div>
-				<div class="lib__desc">
-					<p>${plugins_desc}</p>
-				</div>
-			</div>
-
-			<h2>Reviewer Entries</h2>
-			<div class="reviewer-entries">
-				{{if follower_list == ''}}
-					<p>Nothing</p>
-				{{else}}
-					<dl>
-						{{each follower_list}}
-							<dt>
-								<a class="jser-icon" href="#/jser/${$value.follower_id}/">
-									<img class="jser-icon__img" src="${$value.follower_img_url}"/>
-									<span class="jser-icon__name">@${$value.follower_name}</span>
-								</a>
-							</dt>
-							<dd>
-								<a href="#/jser/${$value.follower_id}">${$value.follower_site_name}</a>
-								<ul>
-									{{each follower_entry}}
-										<li><a class="ext" target="_blank" href="${$value.entry_url}">${$value.entry_title}</a></li>
-									{{/each}}
-								</ul>
-							</dd>
-						{{/each}}
-					</dl>
-				{{/if}}
-			</div>
-
-			<h2>Other ${category_name} Library</h2>
-
-			<div class="other-libs">
-				{{tmpl "#tmpl-card"}}
-			</div>
-
-			<div class="pager">
-				{{tmpl "#tmpl-pager"}}
-			</div>
-		</div>
-	</script>
-
-	<script class="tmpl" id="tmpl-cateogry-article" type="text/x-jquery-tmpl">
-		<div class="article__header">
-			<h1 class="article__title">${article_title}</h1>
-		</div>
-		<div class="article__body">
-			<div class="other-libs">
-				{{tmpl "#tmpl-card"}}
-			</div>
-			<div class="pager">
-				{{tmpl "#tmpl-pager"}}
-			</div>
-		</div>
-	</script>
-
-</head>
-<body>
-	<!-- HEADER -->
-	<div class="l-header">
-		<div class="u-layout-center">
-			<div class="site-header">
-				<a class="site-header__logo" target="_blank" href="http://www.cyokodog.net/">
-					<img src="https://lh4.googleusercontent.com/-u47wdUJYuNk/Tuiz2w6sLuI/AAAAAAAAEGA/v0cmgN4ZysU/s144/DSC01588.JPG"/>
-				</a>
-				<div class="site-header__text">
-					<h1>
-						<a href="#"><span class="site-header__logo-strong">JS</span>TOCK</a>
-					</h1>
-					<h2>LIBRARY &amp; JSer STOCK</h2>
-				</div>
-			</div>
-		</div>
-	</div>
-	<div class="l-site-nav">
-		<div class="u-layout-center">
-			<div class="tab site-nav">
-				<ul>
-					<li class="site-nav__home"><a href="">HOME</a></li><!--
-					--><li class="site-nav__library"><a href="#/library/">LIBRARY</a></li><!--
-					--><li class="site-nav__jser"><a href="#/jser/">JSer</a></li>
-				</ul>
-			</div>
-		</div>
-	</div>
-	<div class="l-contents">
-		<div class="u-layout-center">
-			<div class="l-article">
-				<article class="article">
-				</article>
-			</div>
-			<div class="l-page-nav">
-				<div class="l-page-nav__body">
-				</div>
-			</div>
-		</div>
-	</div>
-</body>
 </html>

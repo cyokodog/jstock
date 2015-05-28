@@ -1,0 +1,15 @@
+<h3 class="card__tilte" ng-init="d.page_id = d.plugins_rec == '1' ? 'library' : 'jser'">
+	<a ui-sref="article({pageId:d.page_id, articleId:d.plugins_id})"><img class="card__jser-icon" ng-src="{{d.plugger_img_url}}"/> {{d.plugins_name}}</a>
+</h3>
+<a ui-sref="article({pageId:d.page_id, articleId:d.plugins_id})"><img class="card__lib-img" ng-src="{{d.plugins_img_url_s}}"/></a>
+<p class="card__desc">{{d.plugins_desc}}</p>
+<ul class="card-info">
+	<li class="card-info__date">{{d.post_date}}</li>
+	<li class="card-info__entries">{{d.entries_qty}} POST</li>
+	<li class="card-info__author">
+		<a ui-sref="article({pageId:'jser', articleId:d.plugger_id})">{{d.plugger_name}}</a>
+	</li>
+	<li class="card-info__link"><a class="ext" target="_blank" ng-href="{{d.plugins_page_url}}">SITE</a>
+		<a ng-if="d.demo_page_url" class="ext" target="_blank" ng-href="{{d.demo_page_url}}">DEMO</a>
+	</li>
+</ul>
