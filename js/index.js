@@ -1,4 +1,6 @@
-var app = angular.module('app', ['ui.router']);
+var app = angular.module('app', ['ui.router', 'ngAnimate', 'angular-loading-bar']);
+
+
 
 app.constant('CONFIG', {
 	API_ENDPOINT: 'http://jquerydb.aws.af.cm/jstock/webapi/',
@@ -123,6 +125,25 @@ app.config([
 					o.fetchData(c.pageNo);
 				},
 
+				initJserCategory: function(){
+					var o = this, c = o.config;
+					if(o.state.pageId == 'jser'){
+						if(o.data.plugins_qty > 0){
+							if(o.data.jp_flg == '1') {
+								o.data.jserCategory = {type: 'japanese-creator', name: 'Japanese Creator'}
+							}
+							else{
+								o.data.jserCategory = {type: 'creator', name: 'Creator'}
+							}
+						}
+						else{
+							if(o.data.jp_flg == '1') {
+								o.data.jserCategory = {type: 'japanese-reviewer', name: 'Japanese Reviewer'}
+							}
+						}
+					}
+				},
+
 				fetchData: function(pageNo){
 					var o = this, c = o.config;
 					c.fetchArticleService.exec({
@@ -137,22 +158,11 @@ app.config([
 						o.data.isNextPage = (o.data.info.next_page_no > c.pageNo);
 						o.data.isPrevPage = (1 < c.pageNo);
 
-						if(o.state.pageId == 'jser'){
-							if(o.data.plugins_qty > 0){
-								if(o.data.jp_flg == '1') {
-									o.data.jserCategory = {type: 'japanese-creator', name: 'Japanese Creator'}
-								}
-								else{
-									o.data.jserCategory = {type: 'creator', name: 'Creator'}
-								}
-							}
-							else{
-								if(o.data.jp_flg == '1') {
-									o.data.jserCategory = {type: 'japanese-reviewer', name: 'Japanese Reviewer'}
-								}
-							}
-						}
-						document.body.scrollTop = 0;
+						o.initJserCategory();
+
+						setTimeout(function(){
+							document.body.scrollTop = 0;
+						},0)
 					});
 				},
 
