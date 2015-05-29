@@ -1,0 +1,52 @@
+/*
+#overview
+Cyokodog Boilerplate
+*/
+ 
+/*#styleguide
+.siteHeader__title
+ 
+```
+<h1 class="siteHeader__title">Cyokodog Boilerplate</h1>
+```
+*/
+
+/* utility */
+.u-table{
+  display: table;
+}
+.u-cell{
+  display: table-cell;
+}
+
+
+
+/* layout */
+.l-example{
+	padding: 32px 0;
+	border-bottom: solid 1px #eee
+}
+
+
+body{
+	margin:0 64px;
+}
+input[type=text]{
+	padding: 4px;
+	border-radius: 4px;
+	border: solid 1px #eee;
+}
+
+.siteHeader{
+	padding: 32px 0;
+	border-bottom: solid 1px #000;
+	.siteHeader__title{
+		font-family: Raleway, sans-serif;
+		text-transform: uppercase;
+		font-size: 36px;
+	}
+}
+.siteBody{
+	padding: 32px 0;
+}
+

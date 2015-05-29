@@ -1,0 +1,17 @@
+<h3 class="card__tilte">
+	<a ui-sref="article({pageId:'jser', articleId:d.plugger_id})">{{d.plugger_name}}</a>
+</h3>
+<a ui-sref="article({pageId:'jser', articleId:d.plugger_id})"><img class="card__jser-img" ng-src="{{d.plugger_img_url}}"/></a>
+<p class="card__desc">{{d.plugins_desc}}</p>
+<ul class="card-info">
+	<li class="card-info__date">{{d.post_date}}</li>
+	<li class="card-info__libs">{{d.plugins_qty}}</li>
+	<li class="card-info__entries">{{d.entries_qty}}</li>
+	<li class="card-info__sns">
+<a ng-if="d.plugger_github_id" class="fa fa-github-square" target="_blank" ng-href="https://github.com/{{d.plugger_github_id}}"></a>
+<a ng-if="d.plugger_twitter_id" class="fa fa-twitter-square" target="_blank" ng-href="https://twitter.com/{{d.plugger_twitter_id}}"></a>
+<a ng-if="d.plugger_fb_id" class="fa fa-facebook-square" target="_blank" ng-href="http://www.facebook.com/{{d.plugger_fb_id}}"></a>
+<a ng-if="d.plugger_hatena_id" class="fa fa-hatena" target="_blank" ng-href="http://www.hatena.ne.jp/{{d.plugger_hatena_id}}"></a>
+	&nbsp;</li>
+	<li class="card-info__site"><a class="ext" target="_blank" ng-href="{{d.plugger_site_url}}">{{d.plugger_site_name}}</a></li>
+</ul>
