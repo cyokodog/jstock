@@ -17,6 +17,9 @@
   </head>
 
   <body>
+<!--
+<div ui-view="viewSiteNav"></div>
+-->
     <!-- HEADER -->
     <div class="l-header">
       <div class="u-layout-center">
@@ -35,13 +38,7 @@
     </div>
     <div class="l-site-nav">
       <div class="u-layout-center">
-        <div class="tab site-nav">
-          <ul>
-            <li class="site-nav__home"><a ui-sref="home()">HOME</a></li><!--
-            --><li class="site-nav__library"><a ui-sref="page({pageId:'library'})">LIBRARY</a></li><!--
-            --><li class="site-nav__jser"><a ui-sref="page({pageId:'jser'})">JSer</a></li>
-          </ul>
-        </div>
+        <site-nav></site-nav>
       </div>
     </div>
     <div class="l-contents">

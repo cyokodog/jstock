@@ -1,7 +1,12 @@
 var app = angular.module('app', ['ui.router']);
 
 app.constant('CONFIG', {
-	API_ENDPOINT: 'http://jquerydb.aws.af.cm/jstock/webapi/'
+	API_ENDPOINT: 'http://jquerydb.aws.af.cm/jstock/webapi/',
+	PAGE_INFO: [
+		{id: 'home', name: 'HOME'},
+		{id: 'library', name: 'LIBRARY'},
+		{id: 'jser', name: 'JSer'}
+	]
 });
 
 app.factory('fetchCategoryService', ['$http', '$q', 'CONFIG', function($http, $q, CONFIG){
@@ -43,11 +48,27 @@ app.factory('fetchArticleService', ['$http', '$q', 'CONFIG', function($http, $q,
 	}
 }]);
 
+
 app.config([
 	'$stateProvider',
 	'$urlRouterProvider',
 	'$locationProvider',
-	function ($stateProvider, $urlRouterProvider, $locationProvider){
+	function (
+		$stateProvider,
+		$urlRouterProvider,
+		$locationProvider
+	){
+		var viewListPage = {
+			template: '<list-page ctrl="ctrl" data="ctrl.data" state="ctrl.state"/>',
+			controllerAs: 'ctrl',
+			controller: articleController
+		}
+
+		var viewArticlePage = {
+			template: '<article-page ctrl="ctrl" data="ctrl.data" state="ctrl.state"/>',
+			controllerAs: 'ctrl',
+			controller: articleController
+		}
 
 		$urlRouterProvider.otherwise('/');
 		$stateProvider
@@ -55,101 +76,116 @@ app.config([
 			state('home',{
 				url: '/',
 				views: {
-					'viewArticle': {
-						template: '<list-page ctrl="ctrl" data="ctrl.data" state="ctrl.state"/>',
-//						template: '<hoge ctrl="ctrl" data="ctrl.data" state="ctrl.state"/>',
-						controllerAs: 'ctrl',
-						controller: 'mainController'
-					},
+					'viewArticle': viewListPage
 				}
 			})
 			.
 			state('category', {
 				url: '/{pageId:library|jser}/category/{categoryId:.+}',
 				views: {
-					'viewArticle': {
-						template: '<list-page ctrl="ctrl" data="ctrl.data" state="ctrl.state"/>',
-						controllerAs: 'ctrl',
-						controller: 'mainController'
-					},
+					'viewArticle': viewListPage
 				}
 			})
 			.
 			state('page', {
 				url: '/{pageId:library|jser}',
 				views: {
-					'viewArticle': {
-//						templateUrl: 'views/list.html',
-						template: '<list-page ctrl="ctrl" data="ctrl.data" state="ctrl.state"/>',
-						controllerAs: 'ctrl',
-						controller: 'mainController'
-					}
+					'viewArticle': viewListPage
 				}
 			})
 			.
 			state('article', {
 				url: '/{pageId:library|jser}/{articleId:.+}',
 				views: {
-					'viewArticle': {
-//						templateUrl: 'views/article.html',
-						template: '<article-page ctrl="ctrl" data="ctrl.data" state="ctrl.state"/>',
-						controllerAs: 'ctrl',
-						controller: 'mainController'
-					}
+					'viewArticle': viewArticlePage
 				}
 			})
+
+
+			articleController.$inject = [
+				'$stateParams',
+				'fetchArticleService'
+			];
+			function articleController(
+				$stateParams,
+				fetchArticleService
+			){
+				this.init.apply(this, Array.prototype.slice.call(arguments));
+			}
+			angular.extend(articleController.prototype, {
+
+				init: function($stateParams, fetchArticleService){
+					var o = this, c = o.config = {
+						fetchArticleService: fetchArticleService,
+						pageNo: 1
+					}
+					o.state = $stateParams;
+					o.fetchData(c.pageNo);
+				},
+
+				fetchData: function(pageNo){
+					var o = this, c = o.config;
+					c.fetchArticleService.exec({
+						page: o.state.pageId || 'home',
+						page_no: c.pageNo,
+						category_id: o.state.categoryId || '*', 
+						single_id: o.state.articleId || '*'
+					}).then(function(res){
+
+						o.data = res;
+						o.data.info = res.article_list_info[0];
+						o.data.isNextPage = (o.data.info.next_page_no > c.pageNo);
+						o.data.isPrevPage = (1 < c.pageNo);
+
+						if(o.state.pageId == 'jser'){
+							if(o.data.plugins_qty > 0){
+								if(o.data.jp_flg == '1') {
+									o.data.jserCategory = {type: 'japanese-creator', name: 'Japanese Creator'}
+								}
+								else{
+									o.data.jserCategory = {type: 'creator', name: 'Creator'}
+								}
+							}
+							else{
+								if(o.data.jp_flg == '1') {
+									o.data.jserCategory = {type: 'japanese-reviewer', name: 'Japanese Reviewer'}
+								}
+							}
+						}
+						document.body.scrollTop = 0;
+					});
+				},
+
+				nextPage: function () {
+					var o = this, c = o.config;
+					c.pageNo ++;
+					o.fetchData(c.pageNo);
+
+				},
+
+				prevPage: function () {
+					var o = this, c = o.config;
+					c.pageNo --;
+					o.fetchData(c.pageNo);
+				}
+			});
 	}
 ]);
 
-app.controller('mainController', ['$stateParams', 'fetchArticleService', function($stateParams, fetchArticleService){
-	var ctrl = this;
-//	ctrl.params = $stateParams;
-	ctrl.state = $stateParams;
-	var fetchData = function(pageNo){
-		fetchArticleService.exec({
-			page: $stateParams.pageId || 'home',
-			page_no: pageNo,
-			category_id: $stateParams.categoryId || '*', 
-			single_id: $stateParams.articleId || '*'
-		}).then(function(res){
-			ctrl.data = res;
-			if($stateParams.pageId == 'jser'){
-				if(ctrl.data.plugins_qty > 0){
-					if(ctrl.data.jp_flg == '1') {
-						ctrl.data.jserCategory = {type: 'japanese-creator', name: 'Japanese Creator'}
-					}
-					else{
-						ctrl.data.jserCategory = {type: 'creator', name: 'Creator'}
-					}
-				}
-				else{
-					if(ctrl.data.jp_flg == '1') {
-						ctrl.data.jserCategory = {type: 'japanese-reviewer', name: 'Japanese Reviewer'}
-					}
-				}
-			}
-			ctrl.data.info = res.article_list_info[0];
-			ctrl.data.isNextPage = (ctrl.data.info.next_page_no > pageNo);
-			ctrl.data.isPrevPage = (1 < pageNo);
-		});
+app.directive('siteNav', function () {
+	return {
+		scope: {},
+		restrict: 'E',
+		//templateUrl: 'directive/list_page.html'
+		templateUrl: 'directive/site_nav.html',
+		controllerAs: 'ctrl',
+		controller: ['CONFIG', '$stateParams', function(CONFIG, $stateParams){
+			var ctrl = this;
+			ctrl.pageInfo = CONFIG.PAGE_INFO;
+			ctrl.state = $stateParams;
+		}]
 	}
-	var pageNo = 1;
-	fetchData(pageNo);
-	ctrl.nextPage = function () {
-		pageNo ++;
-		fetchData(pageNo);
-		document.body.scrollTop = 0;
-
-	}
-	ctrl.prevPage = function () {
-		pageNo --;
-		fetchData(pageNo);
-		document.body.scrollTop = 0;
-	}
-
-	document.body.scrollTop = 0;
-
-}]);
+});
 
 app.directive('listPage', function () {
 	return {

@@ -1,0 +1,8 @@
+<div class="tab site-nav">
+  <ul>
+	<li ng-repeat="list in ctrl.pageInfo" xclass="site-nav__{{list.id}}" xng-class="'site-nav__{{list.id}}'" ng-class="{'is-active':list.id==(ctrl.state.pageId||'home')}">
+		<a ng-if="list.id == 'home'" ui-sref="home()">{{list.name}}</a>
+		<a ng-if="list.id != 'home'" ui-sref="page({pageId: list.id})">{{list.name}}</a>
+	</li>
+  </ul>
+</div>
