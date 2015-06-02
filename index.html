@@ -3,19 +3,22 @@
   <head>
     <meta charset="utf-8">
 
-  <link rel="stylesheet" type="text/css" media="screen" href="jstock/css/style.css">
-  <link href='http://fonts.googleapis.com/css?family=Raleway:300' rel='stylesheet' type='text/css'>
-  <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
-
-
+    <link rel="stylesheet" type="text/css" media="screen" href="jstock/css/style.css">
+    <link href='http://fonts.googleapis.com/css?family=Raleway:300' rel='stylesheet' type='text/css'>
+<!--
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="bower_components/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+-->
+  <link href="jquery_plugins/jquery.fit-sidebar.css" rel="stylesheet">
   <link href="bower_components/angular-loading-bar/build/loading-bar.css" rel="stylesheet">
 
 
+  <script src="bower_components/jquery/jquery.js"></script>
+  <script src="jquery_plugins/jquery.fit-sidebar.js"></script>
   <script type="text/javascript" src="bower_components/angular/angular.js"></script>
   <script type="text/javascript" src="bower_components/angular-ui-router/release/angular-ui-router.js"></script>
   <script type="text/javascript" src="bower_components/angular-animate/angular-animate.js"></script>
   <script type="text/javascript" src="bower_components/angular-loading-bar/build/loading-bar.js"></script>
-  <script type="text/javascript" src="bower_components/ngInfiniteScroll/build/ng-infinite-scroll.js"></script>
 
   <script src="js/index.js"></script>
 
@@ -39,6 +42,14 @@
   height:50px;
   border-radius: 80%;
 }
+
+
+
+
+
+
+
+
 </style>
 
 
@@ -46,7 +57,6 @@
 
   <body>
 
-    <!-- HEADER -->
     <div class="l-header">
       <div class="u-layout-center">
         <div class="site-header">
@@ -75,7 +85,7 @@
           </article>
         </div>
         <div class="l-page-nav">
-          <div class="l-page-nav__body">
+          <div class="l-page-nav__body" fit-sidebar>
             <category-list></category-list>
           </div>
         </div>

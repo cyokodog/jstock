@@ -178,8 +178,6 @@ app.config([
 					o.fetchData(c.pageNo, true);
 					o.data.isNextPage = false;
 				}
-
-
 			},
 
 			prevPage: function () {
@@ -322,3 +320,20 @@ app.directive('categoryList', function(){
 		}]
 	}
 });
+
+app.directive('fitSidebar', function(){
+	return {
+		scope: {},
+		restrict: 'A',
+		transclude: true,
+		template: '<ng-transclude/>',
+		link: function(scope, el, attr){
+			$(el).fitSidebar({
+			    wrapper : '.l-contents',
+				responsiveWidth : 960
+			});
+		}
+	}
+});
+
+
