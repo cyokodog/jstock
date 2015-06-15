@@ -1,152 +1,119 @@
-var Util = {
-	extend: function(){
-	    var ret = arguments[0]
-	    for(var i = 1; i < arguments.length; i++){
-	        var arg = arguments[i];
-	        for(var j in arg) ret[j] = arg[j]
-	    }
-	    return ret;
+(function(){
+
+	var gulp = require('gulp');
+	var p = require('gulp-load-plugins')();
+	var browser = require('browser-sync');
+	var runSequence = require('run-sequence');
+	var merge = require('event-stream').merge;
+
+	function plumberWithNotify(){
+		return p.plumber({
+			errorHandler: p.notify.onError('<%= error.message %>')
+		});
 	}
-}
-var Builder = function(){
-    this.init.apply(this, Array.prototype.slice.call(arguments));
-};
-Builder.prototype = {
-	plumberWithNotify: function() {
-		var o = this, c = o.config;
-		return c.p.plumber({errorHandler: c.p.notify.onError('<%= error.message %>')});
-	},
-	runServer: function(){
-		var o = this, c = o.config;
-		return c.browser({
+
+/*
+	gulp.task('compileSass', function(done) {
+		return gulp.src([
+			'client/sass/style.scss'
+		]).
+			pipe(p.using()).
+			pipe(plumberWithNotify()).
+			pipe(p.sass()).
+			pipe(p.autoprefixer()).
+//			pipe(p.concat('app-all.css')).
+			pipe(gulp.dest('client/dist/'))
+		;	
+	});
+*/
+
+	gulp.task('concatCssLib', function(done) {
+		return gulp.src([
+			'resource/jquery.fit-sidebar.css',
+			'bower_components/angular-loading-bar/build/loading-bar.css'
+		]).
+			pipe(plumberWithNotify()).
+			pipe(p.using()).
+			pipe(p.concat('lib-all.css')).
+			pipe(gulp.dest('app/dist/'))
+		;	
+	});
+
+
+	gulp.task('concatJsLib', function(done) {
+		return gulp.src([
+			'bower_components/jquery/jquery.js',
+			'app_components/jquery.fit-sidebar.js',
+			'bower_components/angular/angular.js',
+			'bower_components/angular-ui-router/release/angular-ui-router.js',
+			'bower_components/angular-animate/angular-animate.js',
+			'bower_components/angular-loading-bar/build/loading-bar.js',
+		]).
+			pipe(plumberWithNotify()).
+			pipe(p.using()).
+			pipe(p.concat('lib-all.js')).
+			pipe(gulp.dest('app/dist/'))
+		;	
+	});
+
+
+	gulp.task('concatJs', function(done) {
+		gulp.src(['app/**/*.js', '!app/**/app.module.js', '!app/dist/*.js']).
+			pipe(plumberWithNotify()).
+			pipe(p.using()).
+			pipe(p.concat('app-all.js')).
+			pipe(gulp.dest('app/dist/')).
+			on('end', function(){
+				gulp.src(['app/**/app.module.js', 'app/dist/app-all.js']).
+					pipe(p.concat('app-all.js')).
+					pipe(gulp.dest('app/dist/')).
+					on('end', function(){
+						gulp.src(['app/dist/lib-all.js', 'app/dist/app-all.js']).
+							pipe(p.concat('all.js')).
+							pipe(gulp.dest('app/dist/')).
+							on('end', done);
+					});
+
+			})
+		;
+	});
+
+	gulp.task('jsMinify', ['concatJs'], function(done) {
+		return gulp.src(['app/dist/all.js']).
+			pipe(p.concat('all.min.js')).
+			pipe(p.uglify()).
+			pipe(gulp.dest('app/dist/'))
+		;
+	});
+
+
+	gulp.task('server', function(){
+		return browser({
+			port: '3010',
 			server: {
-				baseDir: './'
+				baseDir: './app/'
 			}
 		});
-	},
+	})
 
-	compileHtml: function(gulpSrc) {
-		var o = this, c = o.config;
-		(gulpSrc || c.src)
-			.pipe(o.plumberWithNotify())
-		;
-		return o;
-	},
-	compileSass: function(gulpSrc) {
-		var o = this, c = o.config;
-		(gulpSrc || c.src)
-			.pipe(o.plumberWithNotify())
-			.pipe(c.p.frontnote({
-				css: '../css/style.css'
-			}))
-			.pipe(c.p.sass())
-			.pipe(c.p.autoprefixer())
-			.pipe(c.gulp.dest('./css'))
-		;
-		return o;
-	},
-	compileCss: function(gulpSrc) {
-		var o = this, c = o.config;
-		(gulpSrc || c.src)
-			.pipe(c.p.concat('all.min.css'))
-			.pipe(c.p.minifyCss())
-			.pipe(c.gulp.dest('./css'))
-		;
-		return o;
-	},
-	compileJs: function(gulpSrc) {
-		var o = this, c = o.config;
-		(gulpSrc || c.src)
-			.pipe(o.plumberWithNotify())
-			.pipe(c.p.concat('all.min.js'))
-			.pipe(c.p.uglify())
-			.pipe(c.gulp.dest('./js'))
-		;
-		return o;
-	},
+	gulp.task('watch', function(done){
+		gulp.watch(['app/**/*.js'], ['concatJs', browser.reload]);
+		gulp.watch(['app/**/*.html'], [browser.reload]);
+		done();
+	});
 
 
-	reload: function(gulpSrc) {
-		var o = this, c = o.config;
-		(gulpSrc || c.src)
-			.pipe(c.browser.reload({
-				stream:true
-			}));
-		;
-		return o;
-	},
+	gulp.task('default', ['server'], function(){
 
+		runSequence(
+			'concatCssLib',
+			'concatJsLib',
+			'concatJs',
+			'watch',
+			browser.reload
+		);
 
-	setSrc: function(src){
-		var o = this, c = o.config;
-		c.src = c.gulp.src(src);
-		return o;
-	},
-    init: function(setting){
-        var o = this, c = o.config = Util.extend({}, Builder.defaults, setting||{});
-		c.gulp = require('gulp');
-		c.p = require('gulp-load-plugins')();
-		c.browser = require('browser-sync');
-		for(var taskId in c.tasks){
-			(function(taskId){
-				var task = c.tasks[taskId];
-				c.gulp.task(taskId, function() {
-					!task.target || o.setSrc(task.target)
-					task.callback(o);
-				})
-			})(taskId);
-		}
-		c.gulp.task('default', ['server'], function() {
-			for(var taskId in c.tasks){
-				(function(taskId){
-					var task = c.tasks[taskId];
-					if(task.target){
-						c.gulp.watch(task.target,[taskId]);
-					//	o.setSrc(task.target);
-					//	task.callback(o);
-					}
-				})(taskId);
-			}
-		});
-    }
-}
-Builder.defaults = {
-	tasks: {
-		server: {
-			callback: function(api){
-				api.runServer();
-			}
-		},
-		js: {
-			target: ['js/**/*.js','!js/all.min.js'],
-			callback: function(api){
-				api.compileJs().reload();
-			}
-		},
-		html: {
-			target: ['**/*.html'],
-			callback: function(api){
-				api.compileHtml().reload();
-			}
-		},
-		sass: {
-			target: ['sass/**/*.scss'],
-			callback: function(api){
-				api.compileSass();
-			}
-		},
-		css: {
-			target: ['css/*.css','!css/all.min.css'],
-			callback: function(api){
-				api.compileCss().reload();
-			}
-		}
-	}
-}
+	});
 
-new Builder();
-
-
-
-
+})();
 
