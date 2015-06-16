@@ -1,0 +1,71 @@
+<div class="article__header">
+	<h1 class="article__title">{{d.plugger_name}}</h1>
+	<ul class="article__info">
+		<li class="article__info__date">{{d.post_date}}</li>
+		<li class="article__info__category">
+			<a ng-if="d.jserCategory" ui-sref="category({pageId:'jser', categoryId:d.jserCategory.type})">{{d.jserCategory.name}}</a>
+		</li>
+<!--pending-->
+		<li class="article__info__libs {{d.getQtyClass(plugins_qty)}}">{{d.plugins_qty}}</li>
+		<li class="article__info__entries {{d.getQtyClass(entries_qty)}}">{{d.entries_qty}}</li>
+	</ul>
+</div>
+<div class="article__body">
+	<div class="jser">
+		<div class="jser__photo">
+			<img ng-src="{{d.plugger_img_url}}"/>
+		</div>
+		<div class="jser__links">
+			<ul class="article-index">
+				<li><a target="_blank" ng-href="{{d.plugger_site_url}}">{{d.plugger_site_name}}</a></li>
+				<li>
+					<a ng-if="d.plugger_github_id" class="fa fa-github-square" target="_blank" href="https://github.com/{{d.plugger_github_id}}"> GitHub</a>
+					<a ng-if="d.plugger_twitter_id" class="fa fa-twitter-square" target="_blank" href="https://twitter.com/{{d.plugger_twitter_id}}"> Twitter</a>
+					<a ng-if="d.plugger_fb_id" class="fa fa-facebook-square" target="_blank" href="http://www.facebook.com/{{d.plugger_fb_id}}"> Facebook</a>
+					<a ng-if="d.plugger_hatena_id" class="fa fa-hatena" target="_blank" href="http://www.hatena.ne.jp/{{d.plugger_hatena_id}}"> Hatena</a>
+				</li>
+			</ul>
+		</div>
+		<div class="jser__desc">
+			<p>{{d.plugger_desc}}</p>
+		</div>
+	</div>
+
+	<h2>His Entries</h2>
+	<div class="his-entries">
+		<p ng-if="!d.follow_list">Nothing</p>
+		<dl ng-if="d.follow_list">
+			<dt ng-repeat-start="list in d.follow_list">
+				<a class="lib-icon" ui-sref="article({pageId:'library', articleId:list.plugins_id})">
+					<img class="lib-icon__img" ng-src="{{list.plugins_img_url_s}}"/>
+				</a>
+			</dt>
+			<dd ng-repeat-end>
+				<a ui-sref="article({pageId:'library', articleId:list.plugins_id})">{{list.plugins_name}}</a>
+				<ul>
+					<li ng-repeat="entry in list.follow_entry"><a class="ext" target="_blank" href="{{entry.entry_url}}">{{entry.entry_title}}</a></li>
+				</ul>
+			</dd>
+		</dl>
+	</div>
+
+
+	<h2>His Library</h2>
+
+	<div class="his-libs">
+		<div class="card" ng-repeat="list in d.article_list">
+			<library-card ng-if="list.plugins_rec == '1'" data="list"></library-card>
+			<jser-card ng-if="list.plugins_rec == '0'" data="list"></jser-card>
+		</div>
+	</div>
+
+	<div class="pager">
+		<a class="prev-page" ng-if="d.isPrevPage" ng-click="c.prevPage()" href="javascript:void(0)">PREV</a>
+		<a class="next-page" ng-if="d.isNextPage" ng-click="c.nextPage()" href="javascript:void(0)">NEXT</a>
+	</div>
+
+
+</div>
+
+
+

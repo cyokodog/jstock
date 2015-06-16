@@ -1,20 +1,20 @@
-//main/article.controller.js
+//app.controller.js
 ;(function(){
 
-	angular.module('app').controller('articleController', articleController);
+	angular.module('app').controller('appController', appController);
 
-	articleController.$inject = [
+	appController.$inject = [
 		'$stateParams',
 		'articleFetchService'
 	];
 
-	function articleController(
+	function appController(
 		$stateParams,
 		articleFetchService
 	){
 		this.init.apply(this, Array.prototype.slice.call(arguments));
 	}
-	angular.extend(articleController.prototype, {
+	angular.extend(appController.prototype, {
 
 		init: function($stateParams, articleFetchService){
 

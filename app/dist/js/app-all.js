@@ -8,96 +8,188 @@
 //app.config.js
 ;(function(){
 
-	angular.module('app').config(config);
+    angular.module('app').config(config);
 
-	config.$inject = [
-		'$stateProvider',
-		'$urlRouterProvider',
-		'$locationProvider'
-	];
+    config.$inject = [
+        '$stateProvider',
+        '$urlRouterProvider',
+        '$locationProvider'
+    ];
 
-	function config(
-		$stateProvider,
-		$urlRouterProvider,
-		$locationProvider
-	){
-		var viewListPage = {
-			template: '<article-list-view ctrl="ctrl" data="ctrl.data" state="ctrl.state"/>',
-			controllerAs: 'ctrl',
-			controller: 'articleController'
-		}
+    function config(
+        $stateProvider,
+        $urlRouterProvider,
+        $locationProvider
+    ){
+        var articleListView = {
+            template: '<article-list-view ctrl="ctrl" data="ctrl.data" state="ctrl.state"/>',
+            controllerAs: 'ctrl',
+            controller: 'appController'
+        }
+        $urlRouterProvider.otherwise('/');
+ 
+        $stateProvider.
+            state('home',{
+                url: '/',
+                views: {
+                    'viewArticle': articleListView
+                }
+            }).
+            state('category', {
+                url: '/{pageId:library|jser}/category/{categoryId:.+}',
+                views: {
+                    'viewArticle': articleListView
+                }
+            }).
+            state('page', {
+                url: '/{pageId:library|jser}',
+                views: {
+                    'viewArticle': articleListView
+                }
+            }).
+            state('article', {
+                url: '/{pageId:library|jser}/{articleId:.+}',
+                views: {
+                    'viewArticle': {
+                        template: articleTemplate,
+                        controllerAs: 'ctrl',
+                        controller: 'appController'
+                    }
 
-		var viewArticlePage = {
-			template: '<article-view ctrl="ctrl" data="ctrl.data" state="ctrl.state"/>',
-			controllerAs: 'ctrl',
-			controller: 'articleController'
-		}
-
-		$urlRouterProvider.otherwise('/');
-		$stateProvider.
-			state('home',{
-				url: '/',
-				views: {
-					'viewArticle': viewListPage
-				}
-			}).
-			state('category', {
-				url: '/{pageId:library|jser}/category/{categoryId:.+}',
-				views: {
-					'viewArticle': viewListPage
-				}
-			}).
-			state('page', {
-				url: '/{pageId:library|jser}',
-				views: {
-					'viewArticle': viewListPage
-				}
-			}).
-			state('article', {
-				url: '/{pageId:library|jser}/{articleId:.+}',
-				views: {
-					'viewArticle': {
-						template: articleTemplate,
-						controllerAs: 'ctrl',
-						controller: 'articleController'
-					}
-
-				}
-			})
-			;
-			articleTemplate.$inject = ['$stateParams'];
-			function articleTemplate($stateParams){
-				return '<article-' + $stateParams.pageId + '-view ctrl="ctrl" data="ctrl.data"/>';
-			}
-
-
-/*
-<library-article ng-if="s.pageId=='library'" ctrl="c" data="d"></library-article>
-<jser-article ng-if="s.pageId=='jser'" ctrl="c" data="d"></jser-article>
-*/
-
-
-
-
-	}
+                }
+            })
+            ;
+ 
+            articleTemplate.$inject = ['$stateParams'];
+            function articleTemplate($stateParams){
+                return '<article-' + $stateParams.pageId + '-view ctrl="ctrl" data="ctrl.data"/>';
+            }
+    }
 
 })();
 
 //app.constant.js
 ;(function(){
 
-	angular.module('app').constant('CONFIG', {
-		BASE_URL: '/',
-		VIEW_URL: 'view/',
-		API_ENDPOINT: 'http://jquerydb.aws.af.cm/jstock/webapi/',
-		PAGE_INFO: [
-			{id: 'home', name: 'HOME'},
-			{id: 'library', name: 'LIBRARY'},
-			{id: 'jser', name: 'JSer'}
-		]
+    angular.module('app').constant('CONFIG', {
+        BASE_URL: '/',
+        VIEW_URL: 'view/',
+        API_ENDPOINT: 'http://jquerydb.aws.af.cm/jstock/webapi/',
+        PAGE_INFO: [
+            {id: 'home', name: 'HOME'},
+            {id: 'library', name: 'LIBRARY'},
+            {id: 'jser', name: 'JSer'}
+        ]
+    });
+
+})();
+
+//app.controller.js
+;(function(){
+
+	angular.module('app').controller('appController', appController);
+
+	appController.$inject = [
+		'$stateParams',
+		'articleFetchService'
+	];
+
+	function appController(
+		$stateParams,
+		articleFetchService
+	){
+		this.init.apply(this, Array.prototype.slice.call(arguments));
+	}
+	angular.extend(appController.prototype, {
+
+		init: function($stateParams, articleFetchService){
+
+			var o = this, c = o.config = {
+				articleFetchService: articleFetchService,
+				pageNo: 1
+			}
+			o.state = $stateParams;
+			o.fetchData(c.pageNo);
+		},
+
+		initJserCategory: function(){
+			var o = this, c = o.config;
+			if(o.state.pageId == 'jser'){
+				if(o.data.plugins_qty > 0){
+					if(o.data.jp_flg == '1') {
+						o.data.jserCategory = {type: 'japanese-creator', name: 'Japanese Creator'}
+					}
+					else{
+						o.data.jserCategory = {type: 'creator', name: 'Creator'}
+					}
+				}
+				else{
+					if(o.data.jp_flg == '1') {
+						o.data.jserCategory = {type: 'japanese-reviewer', name: 'Japanese Reviewer'}
+					}
+				}
+			}
+		},
+
+		fetchData: function(pageNo, isAutoPager){
+			var o = this, c = o.config;
+			c.articleFetchService.exec({
+				page: o.state.pageId || 'home',
+				page_no: c.pageNo,
+				category_id: o.state.categoryId || '*', 
+				single_id: o.state.articleId || '*'
+			}).then(function(res){
+				if(!isAutoPager || !o.data){
+					o.data = res;
+				}
+				else{
+					var list = o.data.article_list.concat(res.article_list)
+					o.data = res;
+					o.data.article_list = list;
+				}
+				o.data.info = res.article_list_info[0];
+				o.data.isNextPage = (o.data.info.next_page_no > c.pageNo);
+			//	o.data.isPrevPage = (1 < c.pageNo);
+				o.data.isPrevPage = false;
+				if(o.state.articleId) o.initJserCategory();
+				if(!isAutoPager){
+					setTimeout(function(){
+						document.body.scrollTop = 0;
+					},0)
+				}
+			});
+		},
+
+		nextPage: function () {
+			var o = this, c = o.config;
+			if(!o.state.articleId && o.data.isNextPage){
+				c.pageNo ++;
+				o.fetchData(c.pageNo, true);
+				o.data.isNextPage = false;
+			}
+		},
+
+		prevPage: function () {
+			var o = this, c = o.config;
+			c.pageNo --;
+			o.fetchData(c.pageNo);
+		}
 	});
 
 
+	var getScrollTop = function(){
+		return document.body.scrollTop || document.documentElement.scrollTop
+	}
+	var getDocumentHeigh = function(){
+		return document.body.scrollHeight || document.documentElement.scrollHeight
+	}
+	var win = angular.element(window);
+	win.on('scroll', function(evt){
+		if(getDocumentHeigh() - 1000 < getScrollTop()){
+			var el = document.querySelector('.next-page');
+			if(el) el.click()
+		}
+	})
 
 })();
 
@@ -239,6 +331,7 @@
 //view/article-jser-view.directive.js
 ;(function(){
 
+
 	angular.module('app').directive('articleJserView', articleJserViewDirective);
 
 	articleJserViewDirective.$inject = ['CONFIG'];
@@ -293,115 +386,6 @@
 			templateUrl: CONFIG.VIEW_URL + 'article-list-view.html'
 		}
 	}
-
-})();
-
-//main/article.controller.js
-;(function(){
-
-	angular.module('app').controller('articleController', articleController);
-
-	articleController.$inject = [
-		'$stateParams',
-		'articleFetchService'
-	];
-
-	function articleController(
-		$stateParams,
-		articleFetchService
-	){
-		this.init.apply(this, Array.prototype.slice.call(arguments));
-	}
-	angular.extend(articleController.prototype, {
-
-		init: function($stateParams, articleFetchService){
-
-			var o = this, c = o.config = {
-				articleFetchService: articleFetchService,
-				pageNo: 1
-			}
-			o.state = $stateParams;
-			o.fetchData(c.pageNo);
-		},
-
-		initJserCategory: function(){
-			var o = this, c = o.config;
-			if(o.state.pageId == 'jser'){
-				if(o.data.plugins_qty > 0){
-					if(o.data.jp_flg == '1') {
-						o.data.jserCategory = {type: 'japanese-creator', name: 'Japanese Creator'}
-					}
-					else{
-						o.data.jserCategory = {type: 'creator', name: 'Creator'}
-					}
-				}
-				else{
-					if(o.data.jp_flg == '1') {
-						o.data.jserCategory = {type: 'japanese-reviewer', name: 'Japanese Reviewer'}
-					}
-				}
-			}
-		},
-
-		fetchData: function(pageNo, isAutoPager){
-			var o = this, c = o.config;
-			c.articleFetchService.exec({
-				page: o.state.pageId || 'home',
-				page_no: c.pageNo,
-				category_id: o.state.categoryId || '*', 
-				single_id: o.state.articleId || '*'
-			}).then(function(res){
-				if(!isAutoPager || !o.data){
-					o.data = res;
-				}
-				else{
-					var list = o.data.article_list.concat(res.article_list)
-					o.data = res;
-					o.data.article_list = list;
-				}
-				o.data.info = res.article_list_info[0];
-				o.data.isNextPage = (o.data.info.next_page_no > c.pageNo);
-			//	o.data.isPrevPage = (1 < c.pageNo);
-				o.data.isPrevPage = false;
-				if(o.state.articleId) o.initJserCategory();
-				if(!isAutoPager){
-					setTimeout(function(){
-						document.body.scrollTop = 0;
-					},0)
-				}
-			});
-		},
-
-		nextPage: function () {
-			var o = this, c = o.config;
-			if(!o.state.articleId && o.data.isNextPage){
-				c.pageNo ++;
-				o.fetchData(c.pageNo, true);
-				o.data.isNextPage = false;
-			}
-		},
-
-		prevPage: function () {
-			var o = this, c = o.config;
-			c.pageNo --;
-			o.fetchData(c.pageNo);
-		}
-	});
-
-
-	var getScrollTop = function(){
-		return document.body.scrollTop || document.documentElement.scrollTop
-	}
-	var getDocumentHeigh = function(){
-		return document.body.scrollHeight || document.documentElement.scrollHeight
-	}
-	var win = angular.element(window);
-	win.on('scroll', function(evt){
-		if(getDocumentHeigh() - 1000 < getScrollTop()){
-			var el = document.querySelector('.next-page');
-			if(el) el.click()
-		}
-	})
 
 })();
 

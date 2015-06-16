@@ -1,0 +1,71 @@
+<div class="article__header">
+	<h1 class="article__title">{{d.plugins_name}}</h1>
+	<ul class="article__info">
+		<li class="article__info__date">{{d.post_date}}</li>
+		<li class="article__info__category"><a ui-sref="category({pageId:'library', categoryId:d.category_id})">{{d.category_name}}</a></li>
+		<li class="article__info__licence">{{d.licence}}</li>
+<!-- pendeing -->
+		<li class="article__info__entries ${getQtyClass(entries_qty)}">{{d.entries_qty}}</li>
+	</ul>
+</div>
+<div class="article__body">
+	<div class="lib">
+		<div class="lib__photo">
+			<img ng-src="{{d.plugins_img_url_l}}"/>
+		</div>
+		<div class="lib__jser">
+			<a class="jser-icon" ui-sref="article({pageId:'jser', articleId:d.plugger_id})">
+			<a class="jser-icon" ui-sref="article({pageId:'jser', articleId:d.plugger_id})">
+				<img class="jser-icon__img" ng-src="{{d.plugger_img_url}}"/>
+				<span class="jser-icon__name">@{{d.plugger_name}}</span>
+			</a>
+		</div>
+		<div class="lib__links">
+			<ul class="article-index">
+				<li><a target="_blank" href="{{d.plugins_page_url}}">WebSite</a></li>
+				<li ng-if="d.demo_page_url"><a target="_blank" href="{{d.demo_page_url}}">DEMO</a></li>
+			</ul>
+		</div>
+		<div class="lib__desc">
+			<p>{{d.plugins_desc}}</p>
+		</div>
+	</div>
+
+
+
+	<h2>Reviewer Entries</h2>
+
+	<p ng-if="!d.follower_list">Nothing</p>
+	<dl ng-if="d.follower_list">
+		<dt ng-repeat-start="list in d.follower_list">
+			<a class="jser-icon" ui-sref="article({pageId:'jser', articleId:list.follower_id})">
+				<img class="jser-icon__img" ng-src="{{list.follower_img_url}}"/>
+				<span class="jser-icon__name">@{{list.follower_name}}</span>
+			</a>
+		</dt>
+		<dd ng-repeat-end>
+			<a ui-sref="article({pageId:'jser', articleId:list.follower_id})">{{list.follower_site_name}}</a>
+			<ul>
+				<li ng-repeat="entry in list.follower_entry"><a class="ext" target="_blank" href="{{entry.entry_url}}">{{entry.entry_title}}</a></li>
+			</ul>
+		</dd>
+	</dl>
+
+
+
+	<h2>Other {{d.category_name}} Library</h2>
+
+	<div class="other-libs">
+		<div class="card" ng-repeat="list in d.article_list">
+			<library-card ng-if="list.plugins_rec == '1'" data="list"></library-card>
+		</div>
+	</div>
+
+	<div class="pager">
+		<a class="prev-page" ng-if="d.isPrevPage" ng-click="c.prevPage()" href="javascript:void(0)">PREV</a>
+		<a class="next-page" ng-if="d.isNextPage" ng-click="c.nextPage()" href="javascript:void(0)">NEXT</a>
+	</div>
+
+</div>
+
+

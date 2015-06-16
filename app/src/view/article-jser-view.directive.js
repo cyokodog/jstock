@@ -1,6 +1,7 @@
 //view/article-jser-view.directive.js
 ;(function(){
 
+
 	angular.module('app').directive('articleJserView', articleJserViewDirective);
 
 	articleJserViewDirective.$inject = ['CONFIG'];
