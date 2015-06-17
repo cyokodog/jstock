@@ -1,51 +1,44 @@
+
 //app.controller.js
 ;(function(){
 
 	angular.module('app').controller('appController', appController);
 
 	appController.$inject = [
+		'CONFIG',
 		'$stateParams',
-		'articleFetchService'
+		'articleFetchService',
+		'jserCategoryService'
 	];
 
 	function appController(
+		CONFIG,
 		$stateParams,
-		articleFetchService
+		articleFetchService,
+		jserCategoryService
 	){
-		this.init.apply(this, Array.prototype.slice.call(arguments));
+		this.config = {
+			isAutoPager: CONFIG.IS_AUTO_PAGER,
+			articleFetchService: articleFetchService,
+			jserCategoryService: jserCategoryService,
+			$stateParams: $stateParams
+		};
+
+		this.init();
 	}
 	angular.extend(appController.prototype, {
 
-		init: function($stateParams, articleFetchService){
-
-			var o = this, c = o.config = {
-				articleFetchService: articleFetchService,
-				pageNo: 1
-			}
-			o.state = $stateParams;
-			o.fetchData(c.pageNo);
-		},
-
-		initJserCategory: function(){
+		init: function(){
 			var o = this, c = o.config;
-			if(o.state.pageId == 'jser'){
-				if(o.data.plugins_qty > 0){
-					if(o.data.jp_flg == '1') {
-						o.data.jserCategory = {type: 'japanese-creator', name: 'Japanese Creator'}
-					}
-					else{
-						o.data.jserCategory = {type: 'creator', name: 'Creator'}
-					}
-				}
-				else{
-					if(o.data.jp_flg == '1') {
-						o.data.jserCategory = {type: 'japanese-reviewer', name: 'Japanese Reviewer'}
-					}
-				}
+			c.pageNo = 1;
+			o.state = c.$stateParams;
+			o.fetchData(c.pageNo, true);
+			if(c.isAutoPager){
+				o.autoPager();
 			}
 		},
 
-		fetchData: function(pageNo, isAutoPager){
+		fetchData: function(pageNo, isToTop){
 			var o = this, c = o.config;
 			c.articleFetchService.exec({
 				page: o.state.pageId || 'home',
@@ -53,7 +46,7 @@
 				category_id: o.state.categoryId || '*', 
 				single_id: o.state.articleId || '*'
 			}).then(function(res){
-				if(!isAutoPager || !o.data){
+				if(!c.isAutoPager || !o.data){
 					o.data = res;
 				}
 				else{
@@ -63,10 +56,16 @@
 				}
 				o.data.info = res.article_list_info[0];
 				o.data.isNextPage = (o.data.info.next_page_no > c.pageNo);
-			//	o.data.isPrevPage = (1 < c.pageNo);
-				o.data.isPrevPage = false;
-				if(o.state.articleId) o.initJserCategory();
-				if(!isAutoPager){
+				if(c.isAutoPager){
+					o.data.isPrevPage = false;
+				}
+				else{
+					o.data.isPrevPage = (1 < c.pageNo);
+				}
+				if(o.state.articleId){
+					o.data.jserCategory = c.jserCategoryService.get(o.data.plugins_qty, o.data.jp_flg);
+				}
+				if(isToTop || !c.isAutoPager){
 					setTimeout(function(){
 						document.body.scrollTop = 0;
 					},0)
@@ -78,7 +77,7 @@
 			var o = this, c = o.config;
 			if(!o.state.articleId && o.data.isNextPage){
 				c.pageNo ++;
-				o.fetchData(c.pageNo, true);
+				o.fetchData(c.pageNo);
 				o.data.isNextPage = false;
 			}
 		},
@@ -87,22 +86,24 @@
 			var o = this, c = o.config;
 			c.pageNo --;
 			o.fetchData(c.pageNo);
+		},
+
+		autoPager: function(){
+			var o = this, c = o.config;
+			var getScrollTop = function(){
+				return document.body.scrollTop || document.documentElement.scrollTop
+			}
+			var getDocumentHeigh = function(){
+				return document.body.scrollHeight || document.documentElement.scrollHeight
+			}
+			var win = angular.element(window);
+			win.on('scroll', function(evt){
+				if(getDocumentHeigh() - 1000 < getScrollTop()){
+					var el = document.querySelector('.next-page');
+					if(el) el.click()
+				}
+			})
 		}
 	});
-
-
-	var getScrollTop = function(){
-		return document.body.scrollTop || document.documentElement.scrollTop
-	}
-	var getDocumentHeigh = function(){
-		return document.body.scrollHeight || document.documentElement.scrollHeight
-	}
-	var win = angular.element(window);
-	win.on('scroll', function(evt){
-		if(getDocumentHeigh() - 1000 < getScrollTop()){
-			var el = document.querySelector('.next-page');
-			if(el) el.click()
-		}
-	})
 
 })();
