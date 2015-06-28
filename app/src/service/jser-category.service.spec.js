@@ -1,4 +1,4 @@
-describe('jser-category.service.spec.js', function(){
+describe('jserCategoryService.get', function(){
     beforeEach(module('app'));
     function test(plugins_qty, jq_flg, result){
         return function(jserCategoryService){
@@ -13,16 +13,16 @@ describe('jser-category.service.spec.js', function(){
           );
         }
     }
-    it('japanese creator test', 
+    it('japanese creator になること', 
         inject(test(1,1,{type: 'japanese-creator', name: 'Japanese Creator'}))
     )
-    it('japanese reviewer test', 
+    it('japanese reviewer になること', 
         inject(test(0,1,{type: 'japanese-reviewer', name: 'Japanese Reviewer'}))
     )
-    it('creator test', 
+    it('creator になること', 
         inject(test(1,0,{type: 'creator', name: 'Creator'}))
     )
-    it('other test', 
+    it('空のオブジェクトになること', 
         inject(test(0,0,{}))
     )
 })

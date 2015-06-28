@@ -54,7 +54,7 @@
 
 	<div class="his-libs">
 		<div class="card" ng-repeat="list in d.article_list">
-			<library-card ng-if="list.plugins_rec == '1'" data="list"></library-card>
+			<card-library ng-if="list.plugins_rec == '1'" data="list"></card-library>
 			<jser-card ng-if="list.plugins_rec == '0'" data="list"></jser-card>
 		</div>
 	</div>

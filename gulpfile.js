@@ -5,9 +5,7 @@
     var browser = require('browser-sync');
     var runSequence = require('run-sequence');
     var merge = require('event-stream').merge;
-
     var del = require('del');
-
 
     function plumberWithNotify(){
         return p.plumber({
@@ -93,6 +91,7 @@
             'bower_components/angular-ui-router/release/angular-ui-router.js',
             'bower_components/angular-animate/angular-animate.js',
             'bower_components/angular-loading-bar/build/loading-bar.js',
+            'app_components/angular.auto-pager.js'
         ]).
             pipe(plumberWithNotify()).
             pipe(p.using()).

@@ -43032,202 +43032,253 @@ angular.module('cfp.loadingBar', [])
   });       // wtf javascript. srsly
 })();       //
 
+;(function(){
+
+  angular.module('autoPager',[]).directive('autoPager', directiveFactory);
+
+  function directiveFactory(){
+    return {
+      scope: {
+        autoPagerMs: '@'
+      },
+      restrict: 'A',
+      link: function(scope, el, attr, ctrl){
+          ctrl.init(scope, el, attr);
+      },
+      controller: Controller
+    }
+  }
+
+  function Controller(){
+  }
+  Controller.prototype = {
+    init: init,
+    getScrollTop: getScrollTop,
+    getDocumentHeigh: getDocumentHeigh,
+    bindEvent: bindEvent
+  }
+
+  function init(scope, el, attr){
+    var o = this, c = o.config = {
+      scope: scope,
+      el: el,
+      attr: attr
+    };
+    c.ms = c.scope.autoPagerMs || 300;
+    o.bindEvent();
+  }
+
+  function bindEvent(){
+    var o = this, c = o.config;
+    var win = angular.element(window);
+    if(Controller.scroll){
+      win.off('scroll',Controller.scroll);  
+    }
+    Controller.scroll = function(evt){
+      if(o.getDocumentHeigh() - window.innerHeight - c.ms < o.getScrollTop()){
+        c.el.click();
+      }
+    }
+    win.on('scroll',Controller.scroll); 
+  }
+
+
+  function getScrollTop(){
+    return document.body.scrollTop || document.documentElement.scrollTop
+  }
+  function getDocumentHeigh(){
+    return document.body.scrollHeight || document.documentElement.scrollHeight
+  }
+})();
+
 //app.module.js
 ;(function(){
 
-	angular.module('app', ['ui.router', 'ngAnimate', 'angular-loading-bar']);
+	angular.module('app', ['ui.router', 'ngAnimate', 'angular-loading-bar', 'autoPager']);
 
 })();
 
 //app.config.js
 ;(function(){
 
-    angular.module('app').config(config);
+  angular.module('app').config(config);
 
-    config.$inject = [
-        '$stateProvider',
-        '$urlRouterProvider',
-        '$locationProvider'
-    ];
+  config.$inject = [
+    '$stateProvider',
+    '$urlRouterProvider',
+    '$locationProvider'
+  ];
 
-    function config(
-        $stateProvider,
-        $urlRouterProvider,
-        $locationProvider
-    ){
-        var articleListView = {
-            template: '<article-list-view ctrl="ctrl" data="ctrl.data" state="ctrl.state"/>',
+  function config(
+    $stateProvider,
+    $urlRouterProvider,
+    $locationProvider
+  ){
+    var articleListView = {
+      template: '<view-list ctrl="ctrl" data="ctrl.data" state="ctrl.state"/>',
+      controllerAs: 'ctrl',
+      controller: 'appController'
+    }
+    $urlRouterProvider.otherwise('/');
+ 
+    $stateProvider.
+      state('home',{
+        url: '/',
+        views: {
+          'viewArticle': articleListView
+        }
+      }).
+      state('category', {
+        url: '/{pageId:library|jser}/category/{categoryId:.+}',
+        views: {
+          'viewArticle': articleListView
+        }
+      }).
+      state('page', {
+        url: '/{pageId:library|jser}',
+        views: {
+          'viewArticle': articleListView
+        }
+      }).
+      state('article', {
+        url: '/{pageId:library|jser}/{articleId:.+}',
+        views: {
+          'viewArticle': {
+            template: articleTemplate,
             controllerAs: 'ctrl',
             controller: 'appController'
-        }
-        $urlRouterProvider.otherwise('/');
- 
-        $stateProvider.
-            state('home',{
-                url: '/',
-                views: {
-                    'viewArticle': articleListView
-                }
-            }).
-            state('category', {
-                url: '/{pageId:library|jser}/category/{categoryId:.+}',
-                views: {
-                    'viewArticle': articleListView
-                }
-            }).
-            state('page', {
-                url: '/{pageId:library|jser}',
-                views: {
-                    'viewArticle': articleListView
-                }
-            }).
-            state('article', {
-                url: '/{pageId:library|jser}/{articleId:.+}',
-                views: {
-                    'viewArticle': {
-                        template: articleTemplate,
-                        controllerAs: 'ctrl',
-                        controller: 'appController'
-                    }
+          }
 
-                }
-            })
-            ;
+        }
+      })
+      ;
  
-            articleTemplate.$inject = ['$stateParams'];
-            function articleTemplate($stateParams){
-                return '<article-' + $stateParams.pageId + '-view ctrl="ctrl" data="ctrl.data"/>';
-            }
-    }
+      articleTemplate.$inject = ['$stateParams'];
+      function articleTemplate($stateParams){
+        return '<view-' + $stateParams.pageId + ' ctrl="ctrl" data="ctrl.data"/>';
+      }
+  }
 
 })();
 
 //app.constant.js
 ;(function(){
 
-    angular.module('app').constant('CONFIG', {
-        BASE_URL: '/',
-        VIEW_URL: 'view/',
-        IS_AUTO_PAGER: true,
-        API_ENDPOINT: 'http://jquerydb.aws.af.cm/jstock/webapi/',
-        PAGE_INFO: [
-            {id: 'home', name: 'HOME'},
-            {id: 'library', name: 'LIBRARY'},
-            {id: 'jser', name: 'JSer'}
-        ]
-    });
+  angular.module('app').constant('CONFIG', {
+    BASE_URL: '/',
+    VIEW_URL: 'view/',
+    TEMPLATE_URL: 'template/',
+    IS_AUTO_PAGER: true,
+    API_ENDPOINT: 'http://jquerydb.aws.af.cm/jstock/webapi/',
+    PAGE_INFO: [
+      {id: 'home', name: 'HOME'},
+      {id: 'library', name: 'LIBRARY'},
+      {id: 'jser', name: 'JSer'}
+    ]
+  });
 
 })();
-
 
 //app.controller.js
 ;(function(){
 
-	angular.module('app').controller('appController', appController);
+	angular.module('app').controller('appController', Controller);
 
-	appController.$inject = [
+	Controller.$inject = [
 		'CONFIG',
 		'$stateParams',
 		'articleFetchService',
 		'jserCategoryService'
 	];
 
-	function appController(
+	angular.extend(Controller.prototype, {
+		fetchData: fetchData,
+		nextPage: nextPage,
+		prevPage: prevPage
+	});
+
+	function Controller(
 		CONFIG,
 		$stateParams,
 		articleFetchService,
 		jserCategoryService
 	){
-		this.config = {
-			isAutoPager: CONFIG.IS_AUTO_PAGER,
-			articleFetchService: articleFetchService,
-			jserCategoryService: jserCategoryService,
-			$stateParams: $stateParams
-		};
-
-		this.init();
+		var o = this, c = o.config = {};
+		var arg = arguments;
+		Controller.$inject.forEach(function(name, i){
+			c[name] = arg[i];
+		});
+		c.isAutoPager = c.CONFIG.IS_AUTO_PAGER;
+		c.pageNo = 1;
+		o.state = c.$stateParams;
+		o.fetchData(c.pageNo, true);
 	}
-	angular.extend(appController.prototype, {
 
-		init: function(){
-			var o = this, c = o.config;
-			c.pageNo = 1;
-			o.state = c.$stateParams;
-			o.fetchData(c.pageNo, true);
+	function fetchData(pageNo, isToTop){
+		var o = this, c = o.config;
+		c.articleFetchService.exec({
+			page: o.state.pageId || 'home',
+			page_no: c.pageNo,
+			category_id: o.state.categoryId || '*', 
+			single_id: o.state.articleId || '*'
+		}).then(function(res){
+
+			//autopagerモードの場合はconcatで配列にデータを追加し、通常モードの場合は上書きする
+			if(!c.isAutoPager || !o.data){
+				o.data = res;
+			}
+			else{
+				var list = o.data.article_list.concat(res.article_list)
+				o.data = res;
+				o.data.article_list = list;
+			}
+			o.data.info = res.article_list_info[0];
+
+			//次頁有無の判定結果をセット
+			o.data.isNextPage = (o.data.info.next_page_no > c.pageNo);
+
+			//autopagerモードの場合は前頁リンクを非表示にする
 			if(c.isAutoPager){
-				o.autoPager();
+				o.data.isPrevPage = false;
 			}
-		},
-
-		fetchData: function(pageNo, isToTop){
-			var o = this, c = o.config;
-			c.articleFetchService.exec({
-				page: o.state.pageId || 'home',
-				page_no: c.pageNo,
-				category_id: o.state.categoryId || '*', 
-				single_id: o.state.articleId || '*'
-			}).then(function(res){
-				if(!c.isAutoPager || !o.data){
-					o.data = res;
-				}
-				else{
-					var list = o.data.article_list.concat(res.article_list)
-					o.data = res;
-					o.data.article_list = list;
-				}
-				o.data.info = res.article_list_info[0];
-				o.data.isNextPage = (o.data.info.next_page_no > c.pageNo);
-				if(c.isAutoPager){
-					o.data.isPrevPage = false;
-				}
-				else{
-					o.data.isPrevPage = (1 < c.pageNo);
-				}
-				if(o.state.articleId){
-					o.data.jserCategory = c.jserCategoryService.get(o.data.plugins_qty, o.data.jp_flg);
-				}
-				if(isToTop || !c.isAutoPager){
-					setTimeout(function(){
-						document.body.scrollTop = 0;
-					},0)
-				}
-			});
-		},
-
-		nextPage: function () {
-			var o = this, c = o.config;
-			if(!o.state.articleId && o.data.isNextPage){
-				c.pageNo ++;
-				o.fetchData(c.pageNo);
-				o.data.isNextPage = false;
+			else{
+				o.data.isPrevPage = (1 < c.pageNo);
 			}
-		},
 
-		prevPage: function () {
-			var o = this, c = o.config;
-			c.pageNo --;
+			//jserの詳細画面で表示するjser category は API より取得不可
+			//よって独自ロジック(jserCategoryService)にてカテゴリの設定を行う
+			if(o.state.articleId){
+				o.data.jserCategory = c.jserCategoryService.get(o.data.plugins_qty, o.data.jp_flg);
+			}
+
+			//autopagerモードでない場合は次頁に遷移した場合スクロール位置を先頭に戻す
+			if(isToTop || !c.isAutoPager){
+				setTimeout(function(){
+					document.body.scrollTop = 0;
+				},0)
+			}
+		});
+	}
+
+	function nextPage() {
+		var o = this, c = o.config;
+		if(!o.state.articleId && o.data.isNextPage){
+			c.pageNo ++;
 			o.fetchData(c.pageNo);
-		},
-
-		autoPager: function(){
-			var o = this, c = o.config;
-			var getScrollTop = function(){
-				return document.body.scrollTop || document.documentElement.scrollTop
-			}
-			var getDocumentHeigh = function(){
-				return document.body.scrollHeight || document.documentElement.scrollHeight
-			}
-			var win = angular.element(window);
-			win.on('scroll', function(evt){
-				if(getDocumentHeigh() - 1000 < getScrollTop()){
-					var el = document.querySelector('.next-page');
-					if(el) el.click()
-				}
-			})
+			o.data.isNextPage = false;
 		}
-	});
+	}
+
+	function prevPage() {
+		var o = this, c = o.config;
+		c.pageNo --;
+		o.fetchData(c.pageNo);
+	}
 
 })();
+
+
+
 
 //component/category-list.directive.js
 ;(function(){
@@ -43392,14 +43443,13 @@ angular.module('cfp.loadingBar', [])
 
 })();
 
-//view/article-jser-view.directive.js
+//view/card-jser.directive.js
 ;(function(){
 
+	angular.module('app').directive('cardJser', directiveFactory);
 
-	angular.module('app').directive('articleJserView', articleJserViewDirective);
-
-	articleJserViewDirective.$inject = ['CONFIG'];
-	function articleJserViewDirective(CONFIG) {
+	directiveFactory.$inject = ['CONFIG'];
+	function directiveFactory(CONFIG) {
 		return {
 			scope: {
 				c: '=ctrl',
@@ -43407,19 +43457,19 @@ angular.module('cfp.loadingBar', [])
 				s: '=state'
 			},
 			restrict: 'E',
-			templateUrl: CONFIG.VIEW_URL + 'article-jser-view.html'
+			templateUrl: CONFIG.TEMPLATE_URL + 'card-jser.html'
 		}
 	}
 
 })();
 
-//view/article-library-view.directive.js
+//view/card-library.directive.js
 ;(function(){
 
-	angular.module('app').directive('articleLibraryView', articleLibraryViewDirective);
+	angular.module('app').directive('cardLibrary', directiveFactory);
 
-	articleLibraryViewDirective.$inject = ['CONFIG'];
-	function articleLibraryViewDirective(CONFIG) {
+	directiveFactory.$inject = ['CONFIG'];
+	function directiveFactory(CONFIG) {
 		return {
 			scope: {
 				c: '=ctrl',
@@ -43427,19 +43477,38 @@ angular.module('cfp.loadingBar', [])
 				s: '=state'
 			},
 			restrict: 'E',
-			templateUrl: CONFIG.VIEW_URL + 'article-library-view.html'
+			templateUrl: CONFIG.TEMPLATE_URL + 'card-library.html'
+		}
+	}
+})();
+
+//view-jser.directive.js
+;(function(){
+
+	angular.module('app').directive('viewJser', directiveFactory);
+
+	directiveFactory.$inject = ['CONFIG'];
+	function directiveFactory(CONFIG){
+		return {
+			scope: {
+				c: '=ctrl',
+				d: '=data',
+				s: '=state'
+			},
+			restrict: 'E',
+			templateUrl: CONFIG.TEMPLATE_URL + 'view-jser.html'
 		}
 	}
 
 })();
 
-//view/article-list-view.directive.js
+//view/view-library.directive.js
 ;(function(){
 
-	angular.module('app').directive('articleListView', articleListViewDirective);
+	angular.module('app').directive('viewLibrary', directiveFactory);
 
-	articleListViewDirective.$inject = ['CONFIG'];
-	function articleListViewDirective(CONFIG) {
+	directiveFactory.$inject = ['CONFIG'];
+	function directiveFactory(CONFIG) {
 		return {
 			scope: {
 				c: '=ctrl',
@@ -43447,19 +43516,19 @@ angular.module('cfp.loadingBar', [])
 				s: '=state'
 			},
 			restrict: 'E',
-			templateUrl: CONFIG.VIEW_URL + 'article-list-view.html'
+			templateUrl: CONFIG.TEMPLATE_URL + 'view-library.html'
 		}
 	}
 
 })();
 
-//view/jser-card.directive.js
+//view/view-list.directive.js
 ;(function(){
 
-	angular.module('app').directive('jserCard', jserCardDirective);
+	angular.module('app').directive('viewList', directiveFactory);
 
-	jserCardDirective.$inject = ['CONFIG'];
-	function jserCardDirective(CONFIG) {
+	directiveFactory.$inject = ['CONFIG'];
+	function directiveFactory(CONFIG) {
 		return {
 			scope: {
 				c: '=ctrl',
@@ -43467,27 +43536,8 @@ angular.module('cfp.loadingBar', [])
 				s: '=state'
 			},
 			restrict: 'E',
-			templateUrl: CONFIG.VIEW_URL + 'jser-card.html'
+			templateUrl: CONFIG.TEMPLATE_URL + 'view-list.html'
 		}
 	}
 
-})();
-
-//view/library-card.directive.js
-;(function(){
-
-	angular.module('app').directive('libraryCard', libraryCardDirective);
-
-	libraryCardDirective.$inject = ['CONFIG'];
-	function libraryCardDirective(CONFIG) {
-		return {
-			scope: {
-				c: '=ctrl',
-				d: '=data',
-				s: '=state'
-			},
-			restrict: 'E',
-			templateUrl: CONFIG.VIEW_URL + 'library-card.html'
-		}
-	}
 })();

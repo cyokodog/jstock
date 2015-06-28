@@ -1,16 +1,17 @@
 //app.constant.js
 ;(function(){
 
-    angular.module('app').constant('CONFIG', {
-        BASE_URL: '/',
-        VIEW_URL: 'view/',
-        IS_AUTO_PAGER: true,
-        API_ENDPOINT: 'http://jquerydb.aws.af.cm/jstock/webapi/',
-        PAGE_INFO: [
-            {id: 'home', name: 'HOME'},
-            {id: 'library', name: 'LIBRARY'},
-            {id: 'jser', name: 'JSer'}
-        ]
-    });
+  angular.module('app').constant('CONFIG', {
+    BASE_URL: '/',
+    VIEW_URL: 'view/',
+    TEMPLATE_URL: 'template/',
+    IS_AUTO_PAGER: true,
+    API_ENDPOINT: 'http://jquerydb.aws.af.cm/jstock/webapi/',
+    PAGE_INFO: [
+      {id: 'home', name: 'HOME'},
+      {id: 'library', name: 'LIBRARY'},
+      {id: 'jser', name: 'JSer'}
+    ]
+  });
 
 })();

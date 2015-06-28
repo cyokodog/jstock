@@ -4,13 +4,13 @@
 <div class="article__body">
 	<div class="other-libs">
 		<div class="card" ng-repeat="list in d.article_list">
-			<library-card ng-if="list.plugins_rec == '1'" data="list"></library-card>
-			<jser-card ng-if="list.plugins_rec == '0'" data="list"></jser-card>
+			<card-library ng-if="list.plugins_rec == '1'" data="list"></card-library>
+			<card-jser ng-if="list.plugins_rec == '0'" data="list"></card-jser>
 		</div>
 	</div>
 	<div class="pager">
 		<a class="prev-page" ng-if="d.isPrevPage" ng-click="c.prevPage()" ng-href="javascript:void(0)">PREV</a>
-		<a class="next-page" ng-if="d.isNextPage" ng-click="c.nextPage()" ng-href="javascript:void(0)">NEXT</a>
+		<a class="next-page" ng-if="d.isNextPage" ng-click="c.nextPage()" ng-href="javascript:void(0)" auto-pager auto-pager-ms="1000">NEXT</a>
 	</div>
 </div>
 
